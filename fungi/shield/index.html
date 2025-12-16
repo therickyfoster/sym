@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en" data-app="peace-lab-auto">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Peace Lab — Autonomous Media Reframe + Regenerative Cookbook (Single File)</title>
+<meta name="description" content="Autonomous node that scans feeds, detects harmful framings, and generates regenerative rewrites + a growing cookbook. Auto-runs while the tab stays open." />
+<meta name="theme-color" content="#0f172a" />
+<meta name="color-scheme" content="dark light" />
+<style>
+  :root{
+    --bg:#0a0f1c; --card:#111827; --ink:#e5eef9; --muted:#9fb0c6; --ink-weak:#cbd5e1;
+    --accent:#34d399; --warm:#f59e0b; --danger:#ef4444; --mystic:#a855f7; --cool:#06b6d4;
+    --radius:16px; --gap:1rem; --shadow:0 10px 30px rgba(0,0,0,.35); --maxw:1200px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f8fafc; --card:#fff; --ink:#0b1020; --muted:#475569; --ink-weak:#334155; }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji";}
+  .shell{max-width:var(--maxw);margin:auto;padding:1.25rem}
+  .skip{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+  .skip:focus{left:1rem;top:1rem;width:auto;height:auto;background:#fff;color:#000;padding:.5rem .75rem;border-radius:.5rem}
+
+  header.shell{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .brand{display:flex;align-items:center;gap:.75rem}
+  .brand h1{font-size:1.15rem;margin:0}
+  nav .btn{margin-left:.5rem}
+
+  .hero{display:grid;gap:2rem;align-items:center}
+  .hero-copy .meta{display:flex;flex-wrap:wrap;gap:.5rem;padding:0;margin:.75rem 0}
+  .hero-copy .meta li{list-style:none;background:color-mix(in srgb,var(--accent) 15%, transparent); padding:.35rem .6rem;border-radius:999px}
+  .cta .btn{margin-right:.5rem}
+
+  .panel{margin-block:2rem}
+  .row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--gap)}
+
+  input,select{padding:.6rem .7rem;border-radius:.6rem;border:1px solid color-mix(in srgb,var(--ink) 20%, transparent);background:transparent;color:var(--ink)}
+  input[type="range"]{width:240px}
+  input[type="file"]{display:none}
+  select{width:auto}
+  textarea{width:100%;min-height:90px;padding:.6rem .7rem;border-radius:.6rem;border:1px solid color-mix(in srgb,var(--ink) 20%, transparent);resize:vertical}
+
+  .btn{--bg:var(--card);--fg:var(--ink);background:var(--bg);color:var(--fg);border:1px solid color-mix(in srgb,var(--ink) 20%, transparent);padding:.6rem .9rem;border-radius:.7rem;cursor:pointer}
+  .btn:hover{border-color:color-mix(in srgb,var(--accent) 45%, var(--ink))}
+  .btn:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 60%, transparent);outline-offset:2px}
+  .btn-accent{--bg:color-mix(in srgb,var(--accent) 20%, transparent)}
+  .btn-ghost{background:transparent}
+  .link{background:none;border:none;color:var(--accent);text-decoration:underline;cursor:pointer}
+
+  .card{background:var(--card);border:1px solid color-mix(in srgb,var(--ink) 12%, transparent);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem}
+  .card header{display:flex;justify-content:space-between;align-items:center;gap:.6rem}
+  .card h4{margin:.2rem 0}
+  .meta-row{display:flex;flex-wrap:wrap;gap:.5rem;color:var(--muted);font-size:.9rem}
+  .badge{padding:.2rem .5rem;border-radius:.5rem;background:color-mix(in srgb,var(--danger) 15%, transparent)}
+
+  .list{margin-top:.5rem;padding-left:1.1rem}
+  .list li{margin:.25rem 0}
+  .muted{color:var(--muted)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.95em}
+
+  footer{border-top:1px dashed color-mix(in srgb,var(--ink) 15%, transparent); margin-top:3rem}
+  footer p{margin:1rem 0}
+
+  @media (prefers-reduced-motion:no-preference){
+    [data-animate]{animation:rise .7s ease-out both}
+    @keyframes rise{from{opacity:.001;transform:translateY(6px)}to{opacity:1;transform:none}}
+  }
+  @media print{
+    nav, #install, #status, #open-settings{display:none!important}
+    body{background:#fff;color:#000}
+    .card{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="shell" role="banner">
+  <div class="brand">
+    <svg aria-hidden="true" width="40" height="40" viewBox="0 0 96 96">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34d399"/><stop offset="1" stop-color="#06b6d4"/></linearGradient></defs>
+      <path d="M48 6c18 9 30 16 30 28s-12 28-30 46C30 62 18 46 18 34S30 15 48 6Z" fill="url(#g)"/>
+      <circle cx="48" cy="38" r="10" fill="#0a0f1c" opacity=".85"/>
+    </svg>
+    <h1>Peace Lab — Autonomous Node</h1>
+  </div>
+  <nav aria-label="Primary">
+    <button class="btn" id="scan">Scan Now</button>
+    <button class="btn" id="export">Export Ledger</button>
+    <button class="btn" id="print">Print</button>
+    <button class="btn" id="open-settings">Settings</button>
+    <button class="btn" id="install" title="Add to Home Screen">Install</button>
+    <span id="status" class="muted" aria-live="polite"></span>
+  </nav>
+</header>
+
+<main id="main" class="shell">
+  <section class="hero" data-animate>
+    <div class="hero-copy">
+      <h2>Autonomous reframing, regenerative by default.</h2>
+      <p>Scans feeds, detects misframes, generates dignity-first rewrites, and grows a cross-referenced “Regenerative Cookbook.” Leave the tab open and it keeps propagating care.</p>
+      <ul class="meta"><li>Single file</li><li>WCAG AA+</li><li>Local XML & OPML</li><li>IPFS-ready</li></ul>
+      <div class="row">
+        <label class="file btn btn-ghost" for="xml">Load Local XML</label>
+        <input id="xml" type="file" accept=".xml,.rss,.atom,.rdf" />
+        <label class="file btn btn-ghost" for="opml">Import OPML</label>
+        <input id="opml" type="file" accept=".opml,.xml" />
+        <button class="btn btn-accent" id="quickstart">Quick Start</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Automation & Context</h3>
+    <div class="row">
+      <label for="city" class="muted">City</label>
+      <input id="city" type="text" placeholder="City or region (optional)" />
+      <label for="threshold" class="muted">Sensitivity</label>
+      <input id="threshold" type="range" min="0" max="100" value="55" />
+      <span class="muted" id="th-label">55</span>
+      <label for="interval" class="muted">Auto-scan</label>
+      <select id="interval">
+        <option value="0">Off</option>
+        <option value="5">5 min</option>
+        <option value="10" selected>10 min</option>
+        <option value="30">30 min</option>
+        <option value="60">60 min</option>
+      </select>
+      <label class="muted"><input type="checkbox" id="run-when-hidden" checked /> Run when tab hidden</label>
+      <label class="muted"><input type="checkbox" id="auto-export" /> Auto-export after run</label>
+      <label class="muted"><input type="checkbox" id="notify" /> Notify on new opportunities</label>
+    </div>
+    <div class="row">
+      <input id="new-feed" type="url" placeholder="https://example.com/feed.xml" />
+      <button class="btn" id="add-feed">Add Feed</button>
+      <button class="btn btn-ghost" id="load-examples">Load Example Feeds</button>
+      <button class="btn btn-ghost" id="clear-feeds">Clear Feeds</button>
+      <button class="btn btn-ghost" id="export-feeds">Export Feeds (.opml)</button>
+    </div>
+    <ul id="feeds" class="list" aria-live="polite"></ul>
+  </section>
+
+  <section class="panel">
+    <h3>Reframing Opportunities</h3>
+    <div id="results" class="grid" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Regenerative Cookbook (live & growing)</h3>
+    <p class="muted">Schema-based, cross-referenced patterns. Learn from your edits and add exemplars; export/import the cookbook to share across cities.</p>
+    <div class="row">
+      <button class="btn" id="export-cookbook">Export Cookbook (.json)</button>
+      <label class="file btn btn-ghost" for="import-cookbook">Import Cookbook</label>
+      <input id="import-cookbook" type="file" accept=".json" />
+      <button class="btn btn-ghost" id="reset-cookbook">Reset to Defaults</button>
+    </div>
+    <div id="cookbook" class="grid"></div>
+  </section>
+
+  <section class="panel">
+    <h3>Edge Proxy Snippets (optional)</h3>
+    <p class="muted">To bypass CORS for specific feeds, paste one of these into your edge runtime. Reference: <span class="mono">/proxy?url=ENCODED</span></p>
+    <details>
+      <summary class="link">Cloudflare Worker</summary>
+      <pre class="mono" aria-label="Cloudflare Worker proxy snippet">
+// Cloudflare Worker: save as index.js
+export default {
+  async fetch(req) {
+    const url = new URL(req.url).searchParams.get('url');
+    if(!url) return new Response('Missing url', {status:400});
+    const r = await fetch(url);
+    const txt = await r.text();
+    return new Response(txt, {headers:{
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Access-Control-Allow-Origin': '*'
+    }});
+  }
+};
+      </pre>
+    </details>
+    <details>
+      <summary class="link">Netlify Edge Function</summary>
+      <pre class="mono">
+// netlify/edge-functions/proxy.js
+export default async (req, ctx) => {
+  const u = new URL(req.url).searchParams.get('url');
+  if(!u) return new Response('Missing url', {status:400});
+  const r = await fetch(u); const txt = await r.text();
+  return new Response(txt, {headers:{
+    'Content-Type':'application/xml; charset=utf-8',
+    'Access-Control-Allow-Origin':'*'
+  }});
+};
+export const config = { path: '/proxy' };
+      </pre>
+    </details>
+  </section>
+</main>
+
+<footer class="shell">
+  <p>Peace Lab — Autonomous Regenerative Node · CC-BY-SA 4.0 · <span id="offline">UI ready</span></p>
+</footer>
+
+<script type="module">
+/* ======================================================
+   Peace Lab Autonomous Node — single-file, future-proof
+   ====================================================== */
+
+/* ---------- Versioning ---------- */
+const APP_VERSION = "2.0.0"; // bump when schema changes
+
+/* ---------- Lexicons ---------- */
+const NEGATIVE_LEX = [
+  "crisis","violence","surge","wave","spike","chaos","shocking","plague","disaster",
+  "crime","homeless problem","vagrant","nuisance","tent city","infestation","war"
+];
+const DIGNITY_ANTIPATTERNS = [
+  "the homeless","illegals","bums","addicts","transients","junkies","vagrants"
+];
+
+/* ---------- Cookbook schema v2 ----------
+{
+  id: string,                                    // machine id
+  title: string,                                 // human label
+  tags: string[],                                // "people-first", "survival", "systems"
+  lenses: string[],                              // love, stewardship, mutual, systems
+  severity: "low"|"medium"|"high",               // harm potential
+  match: RegExp,                                 // detects misframe
+  rationale: string,                             // why it's harmful
+  rewrite: string,                               // short guideline
+  examples: {before:string, after:string},       // exemplar pair
+  quests: string[],                              // suggested actions tied to this rewrite
+  metrics: string[],                             // how to measure improvement
+  contributors: string[],                        // optional attribution handles
+  learned: number,                               // auto-accumulated hits
+  addedAt: string,                               // ISO timestamp
+  updatedAt: string                              // ISO timestamp
+}
+--------------------------------------------- */
+const DEFAULT_COOKBOOK = [
+  {
+    id:"people-first",
+    title:"People-first language",
+    tags:["dignity","language"],
+    lenses:["love","stewardship","mutual","systems"],
+    severity:"high",
+    match:/(^|\\b)(the homeless|bums|vagrants|transients|illegals|junkies)(\\b|$)/i,
+    rationale:"Category labels erase personhood and agency.",
+    rewrite:"Use people-first terms: “people experiencing homelessness,” “undocumented neighbors.”",
+    examples:{before:"City targets 'the homeless' in new policy", after:"City partners with people experiencing homelessness to co-design policy"},
+    quests:["Style guide adoption in newsrooms","Update city comms glossary","Add dignity language checklist to copy desk"],
+    metrics:["% articles using people-first terms","complaints reduced","co-authored stories increased"],
+    contributors:[],
+    learned:0, addedAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+  },
+  {
+    id:"crime-wave",
+    title:"‘Crime wave’ sensationalism",
+    tags:["harm","scope","precision"],
+    lenses:["systems","stewardship","love"],
+    severity:"medium",
+    match:/crime wave|spike in crime|crime surge/i,
+    rationale:"‘Wave’ metaphors inflate fear and obscure root causes and remedies.",
+    rewrite:"Be specific about harms; foreground prevention, environment, and repair.",
+    examples:{before:"Downtown faces crime wave as tents grow", after:"Downtown addresses nighttime harm with lighting, warmth access, and consent-first outreach"},
+    quests:["Light audit & quick-fix crews","Warmth access map with SMS","Outreach training on consent-first support"],
+    metrics:["lighting coverage","shelter capacity vs weather","fewer harmful incidents"],
+    contributors:[],
+    learned:0, addedAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+  },
+  {
+    id:"survival-encampment",
+    title:"‘Tent city’ → Survival encampment",
+    tags:["survival","context","care-infra"],
+    lenses:["mutual","love","systems"],
+    severity:"medium",
+    match:/tent city|encampment/i,
+    rationale:"Derogatory shorthand hides survival constraints and dignity infrastructure gaps.",
+    rewrite:"Use “survival encampment”; explain constraints (shelter limits, weather, safety).",
+    examples:{before:"Tent city expands near library", after:"Survival encampment grows as shelters fill; city opens lockers, showers, and warmth routes"},
+    quests:["Lockers & showers pilot","Safe storage access","Warming centers with clear hours"],
+    metrics:["warmth-hours available","lockers per 1000 residents","showers per week"],
+    contributors:[],
+    learned:0, addedAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+  }
+];
+
+/* ---------- Helpers ---------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const clean = s => (s||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+const snippet = (s,n)=> s.length>n ? s.slice(0,n-1)+"…" : s;
+const escapeHtml = s => (s||"").replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escapeAttr = escapeHtml;
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+/* Hash to dedupe stories (link or title+date) */
+async function sha1(s){ const b=new TextEncoder().encode(s); const d=await crypto.subtle.digest("SHA-1",b); return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+
+/* ---------- Negativity scoring ---------- */
+function scoreNegativity(text){
+  const t = (text||"").toLowerCase();
+  let hits = 0;
+  NEGATIVE_LEX.forEach(w => { if(t.includes(w)) hits++; });
+  DIGNITY_ANTIPATTERNS.forEach(w => { if(t.includes(w)) hits += 2; });
+  const len = Math.max(30, t.length);
+  const raw = Math.min(100, Math.round((hits*14) * (120/len) + hits*4));
+  return Math.max(0, raw);
+}
+
+/* ---------- Softening + rewrite ---------- */
+function replaceAllIns(s, map){
+  let out = s;
+  Object.entries(map).forEach(([from,to])=>{
+    out = out.replace(new RegExp(from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), to);
+  });
+  return out;
+}
+function softenTitle(title){
+  return replaceAllIns(title || "Local story", {
+    "homeless problem":"neighbors without housing",
+    "homeless":"people experiencing homelessness",
+    "tent city":"survival encampment",
+    "crime wave":"harm trend",
+    "drug users":"people who use drugs",
+    "addicts":"people in addiction",
+    "vagrant":"neighbor",
+    "illegal":"undocumented neighbor",
+    "illegals":"undocumented neighbors"
+  });
+}
+function loveRewrite({title, city, lens="love"}){
+  const softened = softenTitle(title);
+  const frames = [
+    `From ${softened} to ${city||"our city"}: turning headlines into a repair quest`,
+    `${city||"Community"} names its helpers: ${softened} becomes a stewardship trial`,
+    `Neighbors, not numbers: reframing ${softened} with love and care`,
+    `Debugging the system: ${softened} → open repair, warm spaces, consent-first help`
+  ];
+  const hed = frames[Math.floor(Math.random()*frames.length)];
+  const nutgraf = `In partnership with people with lived experience, ${city||"the community"} is shifting from blame to repair. Goals: warmth, choice, belonging.
+- consent-first support replaces surveillance
+- repair guild stipends fix benches, lights, ramps
+- mutual-aid kitchens + lockers provide dignity infrastructure.`;
+  const quests = [
+    "SMS warmth map + paper map at libraries",
+    "Showers/lockers pilot (library or community center)",
+    "Repair guild stipends for quick fixes (lights, benches, ramps)",
+    "Kitchen rota with dignity tokens for contributors"
+  ];
+  return {hed, nutgraf, quests, lens};
+}
+
+/* ---------- RSS/Atom + OPML ---------- */
+async function fetchFeed(url){
+  const res = await fetch(url, { mode:"cors" });
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  const xml = await res.text();
+  return parseXml(xml, url);
+}
+function parseXml(xmlText, url=""){
+  const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+  const parsererror = doc.querySelector("parsererror");
+  if(parsererror) throw new Error("XML parse error");
+
+  let items = [...doc.querySelectorAll("rss channel item")].map(it => ({
+    title: text(it,"title"), link: text(it,"link"), pubDate: text(it,"pubDate"),
+    summary: text(it,"description") || text(it,"content\\:encoded"), source: url
+  }));
+  if(items.length===0){
+    items = [...doc.querySelectorAll("feed entry")].map(it => ({
+      title: text(it,"title"), link: attr(it,"link","href"),
+      pubDate: text(it,"updated") || text(it,"published"),
+      summary: text(it,"summary") || text(it,"content"), source: url
+    }));
+  }
+  if(items.length===0){
+    items = [...doc.querySelectorAll("rdf\\:RDF item")].map(it => ({
+      title: text(it,"title"), link: text(it,"link"),
+      pubDate: text(it,"dc\\:date"), summary: text(it,"description"), source: url
+    }));
+  }
+  return items;
+}
+function parseOPML(text){
+  const doc = new DOMParser().parseFromString(text, "text/xml");
+  const nodes = [...doc.querySelectorAll("outline[type='rss'], outline[xmlUrl], outline[url]")];
+  return nodes.map(n => n.getAttribute("xmlUrl") || n.getAttribute("url")).filter(Boolean);
+}
+function text(root, sel){ const el=root.querySelector(sel); return el?(el.textContent||"").trim():""; }
+function attr(root, sel, name){ const el=root.querySelector(sel); return el?(el.getAttribute(name)||"").trim():""; }
+
+/* ---------- Persistent State ---------- */
+const state = {
+  feeds: JSON.parse(localStorage.getItem("pla.feeds") || "[]"),
+  backoff: JSON.parse(localStorage.getItem("pla.backoff") || "{}"),   // url -> ms
+  seen:    JSON.parse(localStorage.getItem("pla.seen") || "{}"),      // hash -> 1
+  ledger:  JSON.parse(localStorage.getItem("pla.ledger") || "[]"),
+  city: localStorage.getItem("pla.city") || "",
+  threshold: +(localStorage.getItem("pla.thresh") || 55),
+  everyMin: +(localStorage.getItem("pla.interval") || 10),
+  runHidden: localStorage.getItem("pla.hidden")==="1",
+  autoExport: localStorage.getItem("pla.autoExport")==="1",
+  notify: localStorage.getItem("pla.notify")==="1",
+  lastRun: null, timer: null,
+  cookbook: null, // lazy load/merge
+  version: localStorage.getItem("pla.version") || APP_VERSION
+};
+function savePrefs(){
+  localStorage.setItem("pla.feeds", JSON.stringify(state.feeds));
+  localStorage.setItem("pla.backoff", JSON.stringify(state.backoff));
+  localStorage.setItem("pla.seen", JSON.stringify(state.seen));
+  localStorage.setItem("pla.ledger", JSON.stringify(state.ledger));
+  localStorage.setItem("pla.city", state.city);
+  localStorage.setItem("pla.thresh", String(state.threshold));
+  localStorage.setItem("pla.interval", String(state.everyMin));
+  localStorage.setItem("pla.hidden", state.runHidden ? "1":"0");
+  localStorage.setItem("pla.autoExport", state.autoExport ? "1":"0");
+  localStorage.setItem("pla.notify", state.notify ? "1":"0");
+  localStorage.setItem("pla.version", state.version);
+}
+
+/* ---------- Cookbook persistence & merging ---------- */
+function loadCookbook(){
+  const raw = localStorage.getItem("pla.cookbook");
+  let existing = null;
+  if(raw){
+    try{ existing = JSON.parse(raw); }catch{ existing = null; }
+  }
+  // Merge defaults by id; keep user-added entries; update timestamps
+  const map = new Map((existing||[]).map(r=>[r.id, r]));
+  DEFAULT_COOKBOOK.forEach(def=>{
+    const had = map.get(def.id);
+    if(had){
+      // upgrade fields if missing; keep learned/contributors
+      map.set(def.id, {...def, ...had, updatedAt:new Date().toISOString()});
+    }else{
+      map.set(def.id, def);
+    }
+  });
+  const merged = [...map.values()];
+  state.cookbook = merged;
+  localStorage.setItem("pla.cookbook", JSON.stringify(merged));
+  return merged;
+}
+function resetCookbook(){ localStorage.removeItem("pla.cookbook"); return loadCookbook(); }
+
+/* ---------- Notifications ---------- */
+async function ensureNotifyPermission(){
+  try{
+    if(!("Notification" in window)) return false;
+    if(Notification.permission==="granted") return true;
+    if(Notification.permission!=="denied"){
+      const p = await Notification.requestPermission();
+      return p==="granted";
+    }
+  }catch{}
+  return false;
+}
+function notify(title, body){
+  try{ if("Notification" in window && Notification.permission==="granted"){ new Notification(title, {body}); } }catch{}
+}
+
+/* ---------- UI ---------- */
+const statusEl = $("#status");
+const results = $("#results");
+const cookbookHost = $("#cookbook");
+
+function renderFeeds(){
+  const ul = $("#feeds"); ul.innerHTML="";
+  state.feeds.forEach((f,i)=>{
+    const li = document.createElement("li");
+    li.textContent = f;
+    const info = document.createElement("span");
+    const bo = state.backoff[f]||0;
+    info.className="muted"; info.textContent = bo ? ` (backoff ${Math.round(bo/1000)}s)` : "";
+    const rm = document.createElement("button");
+    rm.className="btn btn-ghost"; rm.textContent="Remove";
+    rm.addEventListener("click", ()=>{ delete state.backoff[f]; state.feeds.splice(i,1); savePrefs(); renderFeeds(); });
+    li.append(" ", info, " ", rm);
+    ul.appendChild(li);
+  });
+}
+
+function renderCookbook(){
+  cookbookHost.innerHTML="";
+  (state.cookbook||[]).forEach(rule=>{
+    const card = document.createElement("article");
+    card.className="card";
+    card.innerHTML = `
+      <header><h4>${escapeHtml(rule.title)}</h4><span class="badge">${escapeHtml(rule.severity||"")}</span></header>
+      <div class="meta-row">
+        <span class="muted">${(rule.tags||[]).map(escapeHtml).join(" • ")}</span>
+        <span class="muted">Lenses: ${(rule.lenses||[]).join(", ")}</span>
+        <span class="muted">Learned: ${rule.learned||0}</span>
+      </div>
+      <p class="muted">${escapeHtml(rule.rationale||"")}</p>
+      <p><strong>${escapeHtml(rule.examples?.before||"")}</strong><br/>→ ${escapeHtml(rule.examples?.after||"")}</p>
+      <p class="muted"><em>Rewrite:</em> ${escapeHtml(rule.rewrite||"")}</p>
+      <details>
+        <summary class="link">Quests & Metrics</summary>
+        <ul class="list">${(rule.quests||[]).map(q=>`<li>${escapeHtml(q)}</li>`).join("")}</ul>
+        <ul class="list">${(rule.metrics||[]).map(m=>`<li class="muted">${escapeHtml(m)}</li>`).join("")}</ul>
+      </details>
+      <div class="tools">
+        <button class="btn btn-ghost" data-edit="${rule.id}">Save current card as exemplar</button>
+        <button class="btn btn-ghost" data-up="${rule.id}">Upvote pattern</button>
+      </div>
+    `;
+    // Exemplar learning: binds later to active result card (if any selected)
+    cookbookHost.appendChild(card);
+  });
+}
+
+/* Connect cookbook actions to current selection later */
+let lastSelectedCard = null;
+
+/* ---------- Cards ---------- */
+function cardForItem(it, score){
+  const city = state.city;
+  const rw = loveRewrite({title: it.title, city});
+  const card = document.createElement("article");
+  card.className="card";
+  card.tabIndex = 0;
+  card.innerHTML = `
+    <header>
+      <h4>${escapeHtml(it.title || "Untitled")}</h4>
+      <span class="badge">${score>=80?"High":score>=60?"Medium":"Low"} need</span>
+    </header>
+    <div class="meta-row">
+      <span class="muted">${it.pubDate ? new Date(it.pubDate).toLocaleString() : ""}</span>
+      ${it.link ? `<a class="btn btn-ghost" target="_blank" rel="noopener" href="${escapeAttr(it.link)}">Source</a>` : ""}
+    </div>
+    <p class="muted">${escapeHtml(snippet(clean(it.summary||""), 240))}</p>
+    <div class="tools">
+      <button class="btn btn-accent">Regenerate</button>
+      <button class="btn">Copy</button>
+      <button class="btn btn-ghost" title="Mark this card for exemplar learning">Mark</button>
+    </div>
+    <section class="reframe" aria-live="polite">
+      <label class="muted">Regenerative Headline</label>
+      <textarea class="hed">${rw.hed}</textarea>
+      <label class="muted">Nutgraf (dignity-first)</label>
+      <textarea class="nut">${rw.nutgraf}</textarea>
+      <label class="muted">Repair Quests</label>
+      <textarea class="q">${rw.quests.map(q=>"• "+q).join("\\n")}</textarea>
+    </section>
+  `;
+  const btnGen = card.querySelector(".btn.btn-accent");
+  const btnCopy = card.querySelector(".btn:not(.btn-accent):not(.btn-ghost)");
+  const btnMark = card.querySelector(".btn.btn-ghost[title]");
+  btnGen.addEventListener("click", ()=>{
+    const newer = loveRewrite({title: it.title, city});
+    card.querySelector(".hed").value = newer.hed;
+    card.querySelector(".nut").value = newer.nutgraf;
+    card.querySelector(".q").value = newer.quests.map(q=>"• "+q).join("\\n");
+  });
+  btnCopy.addEventListener("click", async ()=>{
+    const txt = [
+      `HEADLINE: ${card.querySelector(".hed").value}`, "",
+      `NUTGRAF:`, card.querySelector(".nut").value, "",
+      `REPAIR QUESTS:`, card.querySelector(".q").value, "",
+      `SOURCE: ${it.link||""}`
+    ].join("\\n");
+    try{ await navigator.clipboard.writeText(txt); btnCopy.textContent="Copied!"; setTimeout(()=>btnCopy.textContent="Copy",1200);}catch{}
+  });
+  btnMark.addEventListener("click", ()=>{
+    lastSelectedCard = card;
+    btnMark.textContent = "Marked ✓";
+  });
+  return card;
+}
+
+/* ---------- Scan loop with dedupe + backoff ---------- */
+async function runScan(reason="manual"){
+  if(state.feeds.length===0){ statusEl.textContent="No feeds configured."; return; }
+  statusEl.textContent = `Scanning (${reason})…`;
+  const start = Date.now();
+
+  const resultsToRender = [];
+  let newCount = 0;
+
+  for(const f of state.feeds){
+    const bo = state.backoff[f]||0;
+    if(bo>0){ state.backoff[f] = Math.max(0, bo - 1000); savePrefs(); continue; } // simple countdown backoff
+    try{
+      const items = await fetchFeed(f);
+      for(const it of items){
+        const key = await sha1((it.link||it.title||"") + "|" + (it.pubDate||""));
+        if(state.seen[key]) continue;
+        state.seen[key]=1;
+        const score = scoreNegativity(`${it.title} ${clean(it.summary)}`);
+        if(score >= state.threshold){
+          resultsToRender.push({it, score});
+          newCount++;
+          // bump cookbook rules learn counters when matched
+          (state.cookbook||[]).forEach(rule=>{
+            try{
+              if(rule.match && new RegExp(rule.match).test((it.title||"") + " " + clean(it.summary||""))){
+                rule.learned = (rule.learned||0)+1;
+                rule.updatedAt = new Date().toISOString();
+              }
+            }catch{}
+          });
+        }
+      }
+      state.backoff[f]=0;
+    }catch(err){
+      console.warn("Feed failed", f, err);
+      state.backoff[f] = Math.min((state.backoff[f]||0)*2 + 60_000, 30*60_000); // exp backoff to max 30m
+    }
+    // small polite pause
+    await sleep(150);
+  }
+
+  // Render
+  results.innerHTML = "";
+  const adds = [];
+  for(const {it, score} of resultsToRender){
+    results.appendChild(cardForItem(it, score));
+    const rw = loveRewrite({title: it.title, city: state.city});
+    adds.push({
+      ts:new Date().toISOString(), title: it.title, link: it.link, pubDate: it.pubDate, source: it.source,
+      negativity: score, city: state.city, hed: rw.hed, nutgraf: rw.nutgraf, quests: rw.quests, reason
+    });
+  }
+  state.ledger.unshift(...adds);
+  if(state.ledger.length>6000) state.ledger.splice(6000); // cap
+  savePrefs();
+
+  statusEl.textContent = `Scan complete: ${adds.length} opportunities in ${(Date.now()-start)/1000}s.`;
+  if(state.autoExport && adds.length){ doExport(true); }
+  if(state.notify && newCount>0){ notify("Peace Lab", `${newCount} new reframing opportunities`); }
+}
+
+function startTimer(){
+  stopTimer();
+  if(state.everyMin<=0) return;
+  state.timer = setInterval(async ()=>{
+    if(document.hidden && !state.runHidden) return;
+    await runScan("auto");
+  }, state.everyMin*60*1000);
+}
+function stopTimer(){ if(state.timer){ clearInterval(state.timer); state.timer=null; } }
+
+/* ---------- Exporters ---------- */
+function doExport(silent=false){
+  const out = { app:"peace-lab", ver:APP_VERSION, ts:new Date().toISOString(), city: state.city, items: state.ledger.slice(0,800) };
+  const blob = new Blob([JSON.stringify(out,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = `peace-ledger-${Date.now()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  if(!silent) statusEl.textContent = "Exported ledger JSON.";
+}
+function exportFeedsOPML(){
+  const body = state.feeds.map(u=>`<outline text="${u}" title="${u}" type="rss" xmlUrl="${u}" />`).join("\n");
+  const opml = `<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0"><head><title>Peace Lab Feeds</title></head><body>${body}</body></opml>`;
+  const blob = new Blob([opml], {type:"text/xml"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download="peace-feeds.opml"; a.click();
+  URL.revokeObjectURL(url);
+}
+function exportCookbook(){
+  const blob = new Blob([JSON.stringify(state.cookbook||[], null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href=url; a.download="peace-cookbook.json"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- Importers ---------- */
+$("#opml").addEventListener("change", async (e)=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  try{ const text = await f.text(); const urls = parseOPML(text); urls.forEach(u=>{ if(u && !state.feeds.includes(u)) state.feeds.push(u); }); savePrefs(); renderFeeds(); statusEl.textContent = `Imported ${urls.length} feeds.`; }catch{ statusEl.textContent = "OPML import failed."; }
+});
+$("#import-cookbook").addEventListener("change", async (e)=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  try{
+    const text = await f.text(); const arr = JSON.parse(text);
+    // merge by id
+    const map = new Map((state.cookbook||[]).map(r=>[r.id, r]));
+    arr.forEach(r=>{ map.set(r.id, {...map.get(r.id), ...r, updatedAt:new Date().toISOString()}); });
+    state.cookbook = [...map.values()];
+    localStorage.setItem("pla.cookbook", JSON.stringify(state.cookbook));
+    renderCookbook();
+    statusEl.textContent = "Cookbook imported.";
+  }catch{ statusEl.textContent = "Cookbook import failed."; }
+});
+
+/* ---------- Controls ---------- */
+$("#quickstart").addEventListener("click", ()=>{
+  if(state.feeds.length===0){
+    state.feeds = [
+      "https://www.theguardian.com/world/rss",
+      "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+    ];
+    savePrefs(); renderFeeds();
+  }
+  runScan("quickstart");
+});
+$("#xml").addEventListener("change", async (e)=>{
+  const file = e.target.files?.[0]; if(!file) return;
+  const text = await file.text();
+  try{
+    const items = parseXml(text, file.name);
+    results.innerHTML=""; const adds=[];
+    for(const it of items){
+      const key = await sha1((it.link||it.title||"")+"|"+(it.pubDate||""));
+      if(state.seen[key]) continue;
+      state.seen[key]=1;
+      const score = scoreNegativity(`${it.title} ${clean(it.summary)}`);
+      if(score < state.threshold) continue;
+      results.appendChild(cardForItem(it, score));
+      const rw = loveRewrite({title: it.title, city: state.city});
+      adds.push({ ts:new Date().toISOString(), title: it.title, link: it.link, pubDate: it.pubDate, source:file.name,
+        negativity:score, city:state.city, hed:rw.hed, nutgraf:rw.nutgraf, quests:rw.quests, reason:"local-xml" });
+    }
+    state.ledger.unshift(...adds); savePrefs();
+    statusEl.textContent = `Loaded ${adds.length} opportunities from local XML.`;
+  }catch{ statusEl.textContent="Could not parse XML."; }
+});
+$("#add-feed").addEventListener("click", ()=>{
+  const u = $("#new-feed").value.trim(); if(!u) return;
+  state.feeds.push(u); $("#new-feed").value=""; savePrefs(); renderFeeds();
+});
+$("#load-examples").addEventListener("click", ()=>{
+  state.feeds = [
+    "https://www.ctvnews.ca/rss/ctvnews-ca-top-stories-public-rss-1.822009",
+    "https://www.aljazeera.com/xml/rss/all.xml"
+  ];
+  savePrefs(); renderFeeds();
+});
+$("#clear-feeds").addEventListener("click", ()=>{ state.feeds=[]; savePrefs(); renderFeeds(); });
+
+$("#scan").addEventListener("click", ()=>runScan("manual"));
+$("#export").addEventListener("click", ()=>doExport(false));
+$("#print").addEventListener("click", ()=>window.print());
+$("#export-feeds").addEventListener("click", exportFeedsOPML);
+
+$("#export-cookbook").addEventListener("click", exportCookbook);
+$("#reset-cookbook").addEventListener("click", ()=>{ resetCookbook(); renderCookbook(); statusEl.textContent="Cookbook reset to defaults."; });
+
+$("#city").value = state.city;
+$("#city").addEventListener("input", ()=>{ state.city=$("#city").value.trim(); savePrefs(); });
+
+$("#threshold").value = state.threshold;
+$("#th-label").textContent = String(state.threshold);
+$("#threshold").addEventListener("input", e=>{ state.threshold=+e.target.value; $("#th-label").textContent=String(state.threshold); savePrefs(); });
+
+$("#interval").value = String(state.everyMin);
+$("#interval").addEventListener("change", e=>{ state.everyMin=+e.target.value; savePrefs(); startTimer(); });
+
+$("#run-when-hidden").checked = !!state.runHidden;
+$("#run-when-hidden").addEventListener("change", e=>{ state.runHidden = e.target.checked; savePrefs(); });
+
+$("#auto-export").checked = !!state.autoExport;
+$("#auto-export").addEventListener("change", e=>{ state.autoExport = e.target.checked; savePrefs(); });
+
+$("#notify").checked = !!state.notify;
+$("#notify").addEventListener("change", async e=>{
+  state.notify = e.target.checked;
+  savePrefs();
+  if(state.notify){ await ensureNotifyPermission(); }
+});
+
+$("#open-settings").addEventListener("click", ()=>document.querySelector("header").scrollIntoView({behavior:"smooth"}));
+
+/* Cookbook: bind exemplar learning to marked result card */
+cookbookHost.addEventListener("click", (e)=>{
+  const up = e.target.closest("button[data-up]");
+  const ed = e.target.closest("button[data-edit]");
+  if(up){
+    const id = up.getAttribute("data-up");
+    const rule = (state.cookbook||[]).find(r=>r.id===id);
+    if(rule){ rule.learned = (rule.learned||0)+1; rule.updatedAt=new Date().toISOString(); localStorage.setItem("pla.cookbook", JSON.stringify(state.cookbook)); up.textContent="Upvoted ✓"; }
+  }
+  if(ed){
+    if(!lastSelectedCard){ alert("Mark a result card first (use the Mark button)."); return; }
+    const id = ed.getAttribute("data-edit");
+    const rule = (state.cookbook||[]).find(r=>r.id===id);
+    if(!rule) return;
+    const hed = lastSelectedCard.querySelector(".hed").value;
+    const nut = lastSelectedCard.querySelector(".nut").value;
+    rule.examples = {before: rule.examples?.before || "—", after: hed};
+    rule.rewrite = nut.split("\n")[0] || rule.rewrite;
+    rule.learned = (rule.learned||0)+1;
+    rule.updatedAt = new Date().toISOString();
+    localStorage.setItem("pla.cookbook", JSON.stringify(state.cookbook));
+    alert("Saved current card as an exemplar for this rule.");
+  }
+});
+
+/* Keyboard shortcuts */
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="/"){ e.preventDefault(); $("#new-feed").focus(); }
+  if(e.key.toLowerCase()==="s"){ e.preventDefault(); runScan("shortcut"); }
+  if(e.key.toLowerCase()==="e"){ e.preventDefault(); doExport(false); }
+});
+
+/* ---------- Inline Service Worker registration (Blob) ---------- */
+function registerInlineServiceWorker(){
+  if(!("serviceWorker" in navigator)) return Promise.reject(new Error("SW unsupported"));
+  const swSource = `
+    const CACHE = "peace-lab-auto-v2";
+    const CORE = ["./","./index.html"];
+    self.addEventListener("install", e=>{
+      e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));
+      self.skipWaiting();
+    });
+    self.addEventListener("activate", e=>{
+      e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+      self.clients.claim();
+    });
+    self.addEventListener("fetch", e=>{
+      const u = new URL(e.request.url);
+      if(u.origin === location.origin){
+        e.respondWith((async()=>{
+          const cache = await caches.open(CACHE);
+          const cached = await cache.match(e.request);
+          try{
+            const net = await fetch(e.request);
+            cache.put(e.request, net.clone());
+            return net;
+          }catch{
+            return cached || new Response("Offline", {status:200, headers:{"Content-Type":"text/plain"}});
+          }
+        })());
+      }
+    });
+  `;
+  try{
+    const blob = new Blob([swSource], {type:"text/javascript"});
+    const swUrl = URL.createObjectURL(blob);
+    return navigator.serviceWorker.register(swUrl, {scope:"./"})
+      .then(r=>{ console.log("SW registered (blob)"); return r; })
+      .catch(err=>{ console.warn("Inline SW registration failed.", err); throw err; });
+  }catch(err){ console.warn("Inline SW creation failed.", err); return Promise.reject(err); }
+}
+
+/* ---------- Boot ---------- */
+if(state.version !== APP_VERSION){
+  // migration hook (future)
+  state.version = APP_VERSION; savePrefs();
+}
+loadCookbook();
+renderCookbook();
+renderFeeds();
+$("#city").value = state.city;
+$("#threshold").value = state.threshold;
+$("#th-label").textContent = String(state.threshold);
+$("#interval").value = String(state.everyMin);
+startTimer();
+statusEl.textContent = "Ready. Configure feeds, set auto-scan, and leave this tab open.";
+if(state.notify){ ensureNotifyPermission(); }
+
+registerInlineServiceWorker()
+  .then(()=>{ document.getElementById("offline").textContent = "Offline caching ready"; })
+  .catch(()=>{ document.getElementById("offline").textContent = "Inline SW not available (UI still works)"; });
+
+/* “Install” helper — single-file edition */
+document.getElementById("install").addEventListener("click", ()=>{
+  alert("Use your browser’s Add to Home Screen. Inline SW may be blocked by your browser; app still runs.");
+});
+</script>
+</body>
+</html>

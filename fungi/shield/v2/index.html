@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SymFungi Shield - Autonomous Wildfire Defense System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #00ff88;
+            --secondary: #00ffff;
+            --accent: #ff00ff;
+            --danger: #ff0066;
+            --bg-dark: #0a0e1a;
+            --bg-mid: #141929;
+            --bg-light: #1e2538;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: #e0e6ed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(255, 0, 255, 0.05) 0%, transparent 50%);
+            animation: bgPulse 20s ease-in-out infinite;
+        }
+        
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Particle field */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            from {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
+        /* Header with glassmorphism */
+        .header {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+            animation: headerShine 3s infinite;
+        }
+        
+        @keyframes headerShine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .logo {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            animation: logoGlow 2s ease-in-out infinite alternate;
+            position: relative;
+        }
+        
+        @keyframes logoGlow {
+            from { filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.5)); }
+            to { filter: drop-shadow(0 0 40px rgba(0, 255, 255, 0.8)); }
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--secondary);
+            margin: 1rem 0;
+            opacity: 0.9;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            animation: subtitleFade 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes subtitleFade {
+            from { opacity: 0.6; }
+            to { opacity: 1; }
+        }
+        
+        .version {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--bg-mid), var(--bg-light));
+            padding: 0.7rem 2rem;
+            border-radius: 50px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            animation: versionPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes versionPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* License notice with neon effect */
+        .license-notice {
+            background: linear-gradient(135deg, rgba(20, 25, 41, 0.9), rgba(30, 37, 56, 0.9));
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 3rem auto;
+            max-width: 900px;
+            box-shadow: 
+                0 0 50px rgba(0, 255, 136, 0.2),
+                inset 0 0 50px rgba(0, 255, 136, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .license-notice::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: licenseScan 3s infinite;
+        }
+        
+        @keyframes licenseScan {
+            to { left: 100%; }
+        }
+        
+        .license-header {
+            color: var(--primary);
+            font-weight: 900;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        /* 3D Status Panel */
+        .status-panel {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.05), rgba(0, 255, 255, 0.05));
+            border-radius: 25px;
+            padding: 2rem;
+            margin: 3rem 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(2deg);
+            transition: all 0.3s ease;
+        }
+        
+        .status-panel:hover {
+            transform: perspective(1000px) rotateX(0deg) translateY(-5px);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), transparent);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .status-item:hover::before {
+            left: 100%;
+        }
+        
+        .status-value {
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 10px currentColor;
+            font-size: 1.1rem;
+        }
+        
+        /* Holographic cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin: 3rem 0;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, rgba(20, 25, 41, 0.9), rgba(30, 37, 56, 0.9));
+            border: 2px solid transparent;
+            border-radius: 25px;
+            padding: 2.5rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 25px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .card:hover::before {
+            opacity: 1;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) rotateX(5deg) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 255, 136, 0.3),
+                0 0 80px rgba(0, 255, 255, 0.2);
+        }
+        
+        .card-title {
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+        
+        /* Control Panel with cyber effect */
+        .control-panel {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.05), rgba(0, 255, 255, 0.05));
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 3rem 0;
+            border: 2px solid rgba(255, 0, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .control-panel::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent), var(--danger));
+            border-radius: 30px;
+            opacity: 0.5;
+            animation: borderRotate 3s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes borderRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--bg-dark);
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            margin: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0, 255, 136, 0.4);
+        }
+        
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.6);
+        }
+        
+        .button.emergency {
+            background: linear-gradient(135deg, var(--danger), #ff3366);
+            box-shadow: 0 4px 30px rgba(255, 0, 102, 0.4);
+            animation: emergencyPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes emergencyPulse {
+            0%, 100% { 
+                box-shadow: 0 4px 30px rgba(255, 0, 102, 0.4);
+            }
+            50% { 
+                box-shadow: 0 4px 50px rgba(255, 0, 102, 0.8);
+            }
+        }
+        
+        /* 3D Simulation Display */
+        .simulation-display {
+            background: linear-gradient(135deg, #000814, #001d3d);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            margin: 3rem 0;
+            box-shadow: 
+                0 0 100px rgba(0, 255, 136, 0.3),
+                inset 0 0 100px rgba(0, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(5deg);
+        }
+        
+        .simulation-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 136, 0.03) 2px,
+                    rgba(0, 255, 136, 0.03) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 255, 0.03) 2px,
+                    rgba(0, 255, 255, 0.03) 4px
+                );
+            animation: gridMove 10s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            from { transform: translate(0, 0); }
+            to { transform: translate(50px, 50px); }
+        }
+        
+        .spore-particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, var(--primary), transparent);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--primary);
+            animation: sporeFloat 4s ease-in-out infinite;
+        }
+        
+        @keyframes sporeFloat {
+            0% {
+                transform: translateY(100%) translateX(0) scale(0);
+                opacity: 0;
+            }
+            20% {
+                transform: translateY(80%) translateX(-20px) scale(1);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(20%) translateX(20px) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) translateX(0) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        .acoustic-wave {
+            position: absolute;
+            border: 3px solid var(--secondary);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 20px var(--secondary),
+                inset 0 0 20px var(--secondary);
+            animation: acousticPulse 2s ease-out forwards;
+        }
+        
+        @keyframes acousticPulse {
+            0% {
+                width: 20px;
+                height: 20px;
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+        
+        /* Ecosystem stats with 3D effect */
+        .ecosystem-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 3rem 0;
+            gap: 2rem;
+        }
+        
+        .stat-circle {
+            width: 150px;
+            height: 150px;
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(0, 255, 136, 0.2), transparent),
+                linear-gradient(135deg, rgba(20, 25, 41, 0.9), rgba(30, 37, 56, 0.9));
+            box-shadow: 
+                0 0 50px rgba(0, 255, 136, 0.3),
+                inset 0 0 30px rgba(0, 255, 136, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-circle::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 136, 0.3), transparent);
+            animation: statRotate 3s linear infinite;
+        }
+        
+        @keyframes statRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .stat-circle:hover {
+            transform: scale(1.1) rotateY(180deg);
+            box-shadow: 
+                0 0 80px rgba(0, 255, 136, 0.5),
+                inset 0 0 50px rgba(0, 255, 136, 0.2);
+        }
+        
+        .stat-circle span:first-child {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-shadow: 0 0 20px currentColor;
+        }
+        
+        .stat-circle span:last-child {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        /* Footer with gradient border */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 5rem;
+            border-top: 2px solid transparent;
+            background: 
+                linear-gradient(var(--bg-dark), var(--bg-dark)) padding-box,
+                linear-gradient(90deg, var(--primary), var(--secondary), var(--accent)) border-box;
+            position: relative;
+        }
+        
+        /* Notification system */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 1.5rem 2.5rem;
+            border-radius: 15px;
+            color: white;
+            font-weight: 700;
+            z-index: 10000;
+            animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px) scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.9), rgba(0, 255, 255, 0.9));
+        }
+        
+        .notification.warning {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.9), rgba(255, 87, 34, 0.9));
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.9), rgba(3, 169, 244, 0.9));
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ecosystem-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .simulation-display {
+                height: 300px;
+                transform: none;
+            }
+        }
+        
+        /* Loading animation */
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="particles" id="particleField"></div>
+    
+    <div class="header">
+        <div class="logo">🔥 SymFungi Shield 🛡️</div>
+        <div class="subtitle">Next-Generation Wildfire Defense Network</div>
+        <div class="version">Version 2.0.0 - Quantum Release</div>
+    </div>
+
+    <div class="container">
+        <div class="license-notice">
+            <div class="license-header">⚡ Open Source Defense Technology</div>
+            <p style="font-size: 1.1rem; margin-bottom: 1rem;"><strong>GNU Affero General Public License v3</strong></p>
+            <p style="line-height: 1.8;">Revolutionary wildfire defense system powered by autonomous mycelial networks and acoustic disruption technology. Deploy, modify, and enhance for your ecosystem protection needs.</p>
+            <ul style="margin: 1.5rem 0; padding-left: 2rem; line-height: 1.8;">
+                <li>✅ Industrial-grade deployment ready</li>
+                <li>✅ Real-time ecosystem monitoring</li>
+                <li>✅ AI-powered threat prediction</li>
+                <li>✅ Community-driven development</li>
+            </ul>
+            <p style="color: var(--danger); font-weight: 700;">⚠️ Network modifications must remain open source under AGPL v3</p>
+        </div>
+
+        <div class="status-panel">
+            <h3 style="color: var(--primary); margin-bottom: 2rem; font-size: 1.8rem; text-transform: uppercase;">🌐 Live System Matrix</h3>
+            <div class="status-grid" id="statusGrid">
+                <div class="status-item">
+                    <span>Node Status:</span>
+                    <span class="status-value" id="nodeStatus">QUANTUM READY</span>
+                </div>
+                <div class="status-item">
+                    <span>Spore Reserves:</span>
+                    <span class="status-value" id="sporeReserves">94%</span>
+                </div>
+                <div class="status-item">
+                    <span>Acoustic Array:</span>
+                    <span class="status-value" id="acousticStatus">HYPERSONIC</span>
+                </div>
+                <div class="status-item">
+                    <span>Fire Risk Level:</span>
+                    <span class="status-value" id="fireRisk">ANALYZING...</span>
+                </div>
+                <div class="status-item">
+                    <span>Soil Moisture:</span>
+                    <span class="status-value" id="soilMoisture">42%</span>
+                </div>
+                <div class="status-item">
+                    <span>Network Nodes:</span>
+                    <span class="status-value" id="networkNodes">27 SYNCED</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">🔊 Hypersonic Disruption</div>
+                <p style="line-height: 1.8; margin-bottom: 1.5rem;">Revolutionary acoustic wave technology disrupts combustion at the molecular level while enhancing mycelial communication networks through harmonic resonance.</p>
+                <div style="background: rgba(0, 255, 136, 0.1); padding: 1rem; border-radius: 10px;">
+                    <strong>Frequency Range:</strong> <span id="frequency" style="color: var(--primary);">14.7 - 28.3 kHz</span><br>
+                    <strong>Wave Power:</strong> <span id="amplitude" style="color: var(--secondary);">120 dB SPL</span><br>
+                    <strong>Coverage:</strong> <span id="coverage" style="color: var(--accent);">500m radius</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🧬 Quantum Spores</div>
+                <p style="line-height: 1.8; margin-bottom: 1.5rem;">Genetically enhanced fungal spores with quantum-entangled mycelial networks create instant fire barriers through rapid biomass generation.</p>
+                <div style="background: rgba(0, 255, 255, 0.1); padding: 1rem; border-radius: 10px;">
+                    <strong>Active Strains:</strong> <span style="color: var(--primary);">7 Hybrid Species</span><br>
+                    <strong>Growth Rate:</strong> <span id="growthRate" style="color: var(--secondary);">3.2m/hour</span><br>
+                    <strong>Deployment:</strong> <span id="deployRange" style="color: var(--accent);">1km range</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💧 Hydro-Shield Matrix</div>
+                <p style="line-height: 1.8; margin-bottom: 1.5rem;">Nano-enhanced hydrogel creates moisture barriers that persist for weeks, transforming arid zones into fire-resistant ecosystems.</p>
+                <div style="background: rgba(255, 0, 255, 0.1); padding: 1rem; border-radius: 10px;">
+                    <strong>Retention:</strong> <span id="retentionFactor" style="color: var(--primary);">420% increase</span><br>
+                    <strong>Duration:</strong> <span id="duration" style="color: var(--secondary);">14 days</span><br>
+                    <strong>Coverage:</strong> <span id="moistureCoverage" style="color: var(--accent);">5.2 km²</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🤖 AI Ecosystem</div>
+                <p style="line-height: 1.8; margin-bottom: 1.5rem;">Machine learning algorithms predict fire patterns 72 hours in advance while optimizing spore deployment for maximum ecological impact.</p>
+                <div style="background: rgba(0, 255, 136, 0.1); padding: 1rem; border-radius: 10px;">
+                    <strong>Prediction:</strong> <span style="color: var(--primary);">98.7% accuracy</span><br>
+                    <strong>Response:</strong

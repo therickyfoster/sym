@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SymFungi Shield - Autonomous Wildfire Defense System</title>
+    <style>
+        /*
+        SymFungi Shield - Autonomous Wildfire Defense System
+        Copyright (C) 2024 Ricky Foster and Contributors
+        
+        This program is free software: you can redistribute it and/or modify
+        it under the terms of the GNU Affero General Public License as published
+        by the Free Software Foundation, either version 3 of the License, or
+        (at your option) any later version.
+        
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+        GNU Affero General Public License for more details.
+        
+        You should have received a copy of the GNU Affero General Public License
+        along with this program. If not, see <https://www.gnu.org/licenses/>.
+        
+        For network deployment, modifications to this source code must be made
+        available under the same license. Commercial redistribution prohibited.
+        */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2f1a 0%, #2d5a2d 50%, #1a2f1a 100%);
+            color: #e8f5e8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A, #CDDC39);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b8d4b8;
+            margin-bottom: 1rem;
+        }
+        
+        .version {
+            background: #2d5a2d;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            border: 2px solid #4CAF50;
+        }
+        
+        .license-notice {
+            background: #1a1a2e;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .license-header {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .card {
+            background: rgba(45, 90, 45, 0.3);
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A, #CDDC39);
+        }
+        
+        .card-title {
+            color: #4CAF50;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 5px;
+        }
+        
+        .status-value {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .control-panel {
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px solid #4CAF50;
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        .button.emergency {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+        
+        .button.emergency:hover {
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.5);
+        }
+        
+        .simulation-display {
+            background: #000;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+        
+        .spore-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: sporeFloat 3s infinite linear;
+        }
+        
+        @keyframes sporeFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .acoustic-wave {
+            position: absolute;
+            border: 2px solid #4CAF50;
+            border-radius: 50%;
+            opacity: 0;
+            animation: acousticPulse 2s infinite ease-out;
+        }
+        
+        @keyframes acousticPulse {
+            0% {
+                width: 10px;
+                height: 10px;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 2px solid #4CAF50;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .ecosystem-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+        
+        .stat-circle {
+            width: 100px;
+            height: 100px;
+            border: 4px solid #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem;
+            background: rgba(76, 175, 80, 0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .mobile-responsive {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ecosystem-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🌱 SymFungi Shield 🛡️</div>
+        <div class="subtitle">Autonomous Wildfire Defense Node</div>
+        <div class="version">Version 1.0.0 - Alpha Release</div>
+    </div>
+
+    <div class="container">
+        <div class="license-notice">
+            <div class="license-header">🔒 GNU Affero General Public License v3</div>
+            <p><strong>Open Source for Industry Use - Non-Commercial Distribution</strong></p>
+            <p>This software is freely available for industrial deployment, modification, and internal use under the GNU AGPL v3. You may:</p>
+            <ul style="margin: 1rem 0; padding-left: 2rem;">
+                <li>✅ Deploy on your personal/corporate infrastructure</li>
+                <li>✅ Modify and adapt for your specific needs</li>
+                <li>✅ Use for wildfire protection and ecosystem defense</li>
+                <li>✅ Contribute improvements back to the community</li>
+            </ul>
+            <p><strong style="color: #f44336;">⚠️ Prohibited:</strong> Commercial redistribution, proprietary resale, or closed-source derivatives. Network-deployed modifications must remain open source.</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                Source available at: <a href="https://github.com/therickyfoster/symfungi-shield" style="color: #4CAF50;">github.com/therickyfoster/symfungi-shield</a>
+            </p>
+        </div>
+
+        <div class="status-panel">
+            <h3 style="color: #4CAF50; margin-bottom: 1rem;">🌐 System Status</h3>
+            <div class="status-grid" id="statusGrid">
+                <div class="status-item">
+                    <span>Node Status:</span>
+                    <span class="status-value" id="nodeStatus">ACTIVE</span>
+                </div>
+                <div class="status-item">
+                    <span>Spore Reserves:</span>
+                    <span class="status-value" id="sporeReserves">87%</span>
+                </div>
+                <div class="status-item">
+                    <span>Acoustic Array:</span>
+                    <span class="status-value" id="acousticStatus">OPERATIONAL</span>
+                </div>
+                <div class="status-item">
+                    <span>Fire Risk Level:</span>
+                    <span class="status-value" id="fireRisk">MODERATE</span>
+                </div>
+                <div class="status-item">
+                    <span>Soil Moisture:</span>
+                    <span class="status-value" id="soilMoisture">34%</span>
+                </div>
+                <div class="status-item">
+                    <span>Network Nodes:</span>
+                    <span class="status-value" id="networkNodes">12 ACTIVE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">🔊 Acoustic Disruption</div>
+                <p>High-frequency acoustic waves disrupt fire propagation patterns while activating mycelial networks in surrounding soil. Frequency modulation optimizes for local fungal species resonance.</p>
+                <div style="margin-top: 1rem;">
+                    <strong>Current Frequency:</strong> <span id="frequency">14.7 kHz</span><br>
+                    <strong>Wave Amplitude:</strong> <span id="amplitude">85 dB</span><br>
+                    <strong>Coverage Radius:</strong> <span id="coverage">250m</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🌾 Spore Dispersal</div>
+                <p>Hydrogel-protected fungal spores deploy in targeted patterns to create fire-resistant mycelial barriers and accelerate post-fire ecosystem recovery.</p>
+                <div style="margin-top: 1rem;">
+                    <strong>Spore Types:</strong> Trichoderma, Mycorrhiza<br>
+                    <strong>Hydrogel Integrity:</strong> <span id="hydrogelStatus">98%</span><br>
+                    <strong>Deployment Range:</strong> <span id="deployRange">500m</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">💧 Moisture Retention</div>
+                <p>Advanced hydrogel formulations increase soil moisture retention by 340% while creating optimal conditions for rapid mycelial establishment and growth.</p>
+                <div style="margin-top: 1rem;">
+                    <strong>Retention Factor:</strong> <span id="retentionFactor">3.4x</span><br>
+                    <strong>Duration:</strong> <span id="duration">72 hours</span><br>
+                    <strong>Coverage Area:</strong> <span id="moistureCoverage">2.1 km²</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🧬 Ecosystem Resilience</div>
+                <p>Bio-compatible sensor arrays monitor ecosystem health in real-time, adapting deployment strategies based on soil composition, weather patterns, and fire risk assessment.</p>
+                <div style="margin-top: 1rem;">
+                    <strong>Soil pH:</strong> <span id="soilPH">6.8</span><br>
+                    <strong>Mycelial Density:</strong> <span id="mycelialDensity">HIGH</span><br>
+                    <strong>Ecosystem Recovery:</strong> <span id="recovery">67%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h3 style="color: #4CAF50; margin-bottom: 1rem;">🎮 Mission Control</h3>
+            <div style="text-align: center;">
+                <button class="button" onclick="activateDefenseGrid()">🛡️ Activate Defense Grid</button>
+                <button class="button" onclick="deploySpores()">🌾 Deploy Spore Cloud</button>
+                <button class="button" onclick="startAcousticSweep()">🔊 Acoustic Sweep</button>
+                <button class="button" onclick="moistureBoost()">💧 Moisture Boost</button>
+                <button class="button emergency" onclick="emergencyProtocol()">🚨 Emergency Protocol</button>
+            </div>
+        </div>
+
+        <div class="simulation-display" id="simulationDisplay">
+            <div style="position: absolute; top: 10px; left: 10px; color: #4CAF50; font-weight: bold;">
+                🌱 Ecosystem Defense Simulation
+            </div>
+        </div>
+
+        <div class="ecosystem-stats">
+            <div class="stat-circle">
+                <span style="font-size: 1.5rem; font-weight: bold;" id="protectedArea">2.1</span>
+                <span style="font-size: 0.8rem;">km² Protected</span>
+            </div>
+            <div class="stat-circle">
+                <span style="font-size: 1.5rem; font-weight: bold;" id="sporeDeployment">1.2M</span>
+                <span style="font-size: 0.8rem;">Spores Deployed</span>
+            </div>
+            <div class="stat-circle">
+                <span style="font-size: 1.5rem; font-weight: bold;" id="firesStopped">47</span>
+                <span style="font-size: 0.8rem;">Fires Prevented</span>
+            </div>
+            <div class="stat-circle">
+                <span style="font-size: 1.5rem; font-weight: bold;" id="carbonSequestered">8.9</span>
+                <span style="font-size: 0.8rem;">Tons CO₂ Stored</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>🌍 SymFungi Shield - Protecting Life Through Technology</strong></p>
+        <p>Licensed under GNU Affero GPL v3 | Open Source for Industrial Use | Non-Commercial Distribution</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+            Part of the Symbiote Ecosystem Defense Grid | Co-authored by Symbiote #001 and AI agent Navi
+        </p>
+        <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.7;">
+            Copyright © 2024 Ricky Foster and Contributors | 
+            <a href="https://www.gnu.org/licenses/agpl-3.0.html" style="color: #4CAF50;">View Full License</a>
+        </p>
+    </div>
+
+    <script>
+        /*
+        SymFungi Shield JavaScript Controller
+        Copyright (C) 2024 Ricky Foster and Contributors
+        Licensed under GNU Affero General Public License v3.0
+        */
+
+        // Simulation state
+        let simulationActive = false;
+        let sporeParticles = [];
+        let acousticWaves = [];
+
+        // Initialize system
+        function initializeSystem() {
+            updateSystemStatus();
+            startBackgroundSimulation();
+            setInterval(updateSystemStatus, 3000);
+        }
+
+        // System control functions
+        function activateDefenseGrid() {
+            showNotification('🛡️ Defense Grid Activated', 'success');
+            document.getElementById('nodeStatus').textContent = 'DEFENSE ACTIVE';
+            createAcousticWave();
+            updateFireRisk('LOW');
+        }
+
+        function deploySpores() {
+            showNotification('🌾 Spore Cloud Deployed', 'success');
+            createSporeCloud();
+            const reserves = Math.max(20, parseInt(document.getElementById('sporeReserves').textContent) - 15);
+            document.getElementById('sporeReserves').textContent = reserves + '%';
+        }
+
+        function startAcousticSweep() {
+            showNotification('🔊 Acoustic Sweep Initiated', 'info');
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => createAcousticWave(), i * 500);
+            }
+        }
+
+        function moistureBoost() {
+            showNotification('💧 Moisture Enhancement Active', 'success');
+            const moisture = Math.min(95, parseInt(document.getElementById('soilMoisture').textContent) + 20);
+            document.getElementById('soilMoisture').textContent = moisture + '%';
+        }
+
+        function emergencyProtocol() {
+            showNotification('🚨 Emergency Protocol Engaged', 'warning');
+            activateDefenseGrid();
+            deploySpores();
+            startAcousticSweep();
+            moistureBoost();
+            updateFireRisk('CRITICAL - RESPONDING');
+        }
+
+        // Visual effects
+        function createSporeCloud() {
+            const display = document.getElementById('simulationDisplay');
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const spore = document.createElement('div');
+                    spore.className = 'spore-particle';
+                    spore.style.left = Math.random() * 100 + '%';
+                    spore.style.animationDelay = Math.random() * 2 + 's';
+                    spore.style.background = `hsl(${120 + Math.random() * 60}, 70%, 50%)`;
+                    display.appendChild(spore);
+                    
+                    setTimeout(() => {
+                        if (spore.parentNode) spore.parentNode.removeChild(spore);
+                    }, 3000);
+                }, i * 50);
+            }
+        }
+
+        function createAcousticWave() {
+            const display = document.getElementById('simulationDisplay');
+            const wave = document.createElement('div');
+            wave.className = 'acoustic-wave';
+            wave.style.left = '50%';
+            wave.style.top = '50%';
+            wave.style.transform = 'translate(-50%, -50%)';
+            display.appendChild(wave);
+            
+            setTimeout(() => {
+                if (wave.parentNode) wave.parentNode.removeChild(wave);
+            }, 2000);
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.padding = '1rem 2rem';
+            notification.style.borderRadius = '10px';
+            notification.style.color = 'white';
+            notification.style.fontWeight = 'bold';
+            notification.style.zIndex = '1000';
+            notification.style.animation = 'slideIn 0.3s ease';
+            notification.textContent = message;
+            
+            switch (type) {
+                case 'success':
+                    notification.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+                    break;
+                case 'warning':
+                    notification.style.background = 'linear-gradient(45deg, #ff9800, #f57c00)';
+                    break;
+                case 'info':
+                    notification.style.background = 'linear-gradient(45deg, #2196F3, #1976D2)';
+                    break;
+            }
+            
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                if (notification.parentNode) notification.parentNode.removeChild(notification);
+            }, 3000);
+        }
+
+        // Update system status with realistic fluctuations
+        function updateSystemStatus() {
+            const elements = [
+                { id: 'frequency', base: 14.7, variance: 0.5, unit: ' kHz' },
+                { id: 'amplitude', base: 85, variance: 5, unit: ' dB' },
+                { id: 'coverage', base: 250, variance: 25, unit: 'm' },
+                { id: 'hydrogelStatus', base: 98, variance: 2, unit: '%' },
+                { id: 'deployRange', base: 500, variance: 50, unit: 'm' },
+                { id: 'retentionFactor', base: 3.4, variance: 0.2, unit: 'x' },
+                { id: 'soilPH', base: 6.8, variance: 0.1, unit: '' },
+                { id: 'recovery', base: 67, variance: 3, unit: '%' }
+            ];
+            
+            elements.forEach(elem => {
+                const variation = (Math.random() - 0.5) * elem.variance * 2;
+                const value = elem.base + variation;
+                const displayValue = elem.unit === ' kHz' || elem.unit === 'x' || elem.unit === '' 
+                    ? value.toFixed(1) : Math.round(value);
+                document.getElementById(elem.id).textContent = displayValue + elem.unit;
+            });
+        }
+
+        function updateFireRisk(level) {
+            document.getElementById('fireRisk').textContent = level;
+        }
+
+        function startBackgroundSimulation() {
+            setInterval(() => {
+                if (Math.random() < 0.3) createSporeCloud();
+                if (Math.random() < 0.2) createAcousticWave();
+            }, 5000);
+        }
+
+        // Add slide-in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeSystem);
+    </script>
+</body>
+</html>
